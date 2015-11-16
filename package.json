@@ -10,7 +10,6 @@
   "license": "ISC",
   "devDependencies": {
     "chromecast-player": "^0.2.2",
-    "scribble": "0.0.5",
-    "spotify": "^0.3.0"
+    "scribble": "0.0.5"
   }
 }
