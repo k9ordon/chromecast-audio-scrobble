@@ -1,8 +1,17 @@
 {
+    "accounts": [
+        {
+            "lastfm_username": "lastfm base account (scrobble always)",
+            "lastfm_password": ""
+        },
+        {
+            "lastfm_username": "lastfm ip account (scrobble if ip online)",
+            "lastfm_password": "",
+            "ip": ""
+        }
+    ],
     "lastfm": {
-        "key": "",
-        "secret": "",
-        "username": "",
-        "password": ""
+        "key": "last fm app key",
+        "secret": ""
     }
 }
