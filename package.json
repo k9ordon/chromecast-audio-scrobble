@@ -11,6 +11,6 @@
   "devDependencies": {
     "chromecast-player": "^0.2.2",
     "express": "^4.13.3",
-    "scribble": "0.0.5"
+    "scribble": "https://github.com/dittodhole/scribble"
   }
 }
