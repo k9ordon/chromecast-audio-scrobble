@@ -2,12 +2,12 @@
     "accounts": [
         {
             "lastfm_username": "lastfm base account (scrobble always)",
-            "lastfm_password": ""
+            "lastfm_password": "",
+            "active": true
         },
         {
             "lastfm_username": "lastfm ip account (scrobble if ip online)",
-            "lastfm_password": "",
-            "ip": ""
+            "lastfm_password": ""
         }
     ],
     "lastfm": {

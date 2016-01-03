@@ -5,8 +5,7 @@ var ping = require('ping');
 var config = require('./config.json');
 
 var accounts = config.accounts;
-var base_scrobblers = [];
-var ip_scrobblers = {};
+var scrobblers = {};
 
 // STATUS
 var STATUS = false;
@@ -14,24 +13,26 @@ var LAST_TRACK = false;
 var LAST_LAST_FM_RESPONSE = false;
 var ONLINE_ACCOUNTS = false;
 
+var createScrobbler = function(account) {
+  var scrobbler = new scribble(
+      config.lastfm.key,
+      config.lastfm.secret,
+      account.lastfm_username,
+      account.lastfm_password
+  );
+  return scrobbler;
+};
+
 // iterate accounts
 // setup scrobblers
 accounts.forEach(function(account) {
-    console.log(account.lastfm_username, account.ip);
+    if(account.active != true) return false;
 
-    var scrobbler = new scribble(
-        config.lastfm.key,
-        config.lastfm.secret,
-        account.lastfm_username,
-        account.lastfm_password
-    );
-
-    if(account.ip) {
-        ip_scrobblers[account.ip] = scrobbler;
-    } else {
-        base_scrobblers.push(scrobbler);
-    }
+    console.log('add user', account.lastfm_username);
+    scrobblers[account.lastfm_username] = createScrobbler(account);
 });
+
+console.log(scrobblers);
 
 // discover and init chromecast
 chromecastPlayer.attach(function(err, p) {
@@ -39,12 +40,13 @@ chromecastPlayer.attach(function(err, p) {
 
     STATUS = session.playerState;
 
+    console.log('status', STATUS);
     p.on('status', onStatus);
 });
 
 // on chromecast status change
 var onStatus = function(status) {
-    console.log(status.playerState);
+    console.log('status', status.playerState);
 
     STATUS = status.playerState;
 
@@ -64,28 +66,17 @@ var onStatus = function(status) {
 }
 
 var scrobbleSongOnAllScrobblers = function(song) {
-    base_scrobblers.forEach(function(scrobbler) {
-        scrobbleSong(scrobbler, song)
-    });
-
-    ONLINE_ACCOUNTS = [];
-
-    for( var ip in ip_scrobblers) {
-        ping.sys.probe(ip, function(isAlive){
-            if(isAlive) {
-                ONLINE_ACCOUNTS.push(ip_scrobblers[ip].username)
-                scrobbleSong(ip_scrobblers[ip], song);
-            }
-        });
+    for (var username in scrobblers) {
+        scrobbleSong(scrobblers[username], song)
     }
 }
 
 var scrobbleSong = function(scrobbler, song) {
-    console.log("scrobbleSong", scrobbler.username, song.track);
+    console.log("scrobble", scrobbler.username, song.track);
 
-    scrobbler.Scrobble(song, function(response) {
-        LAST_LAST_FM_RESPONSE = response;
-    });
+    // scrobbler.Scrobble(song, function(response) {
+    //     LAST_LAST_FM_RESPONSE = response;
+    // });
 }
 
 // simple http status server
