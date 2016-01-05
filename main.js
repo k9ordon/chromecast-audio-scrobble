@@ -141,17 +141,17 @@ var scrobbleSongOnAllScrobblers = function(song) {
 var nowplayingSong = function(scrobbler, song) {
   log.info("nowplaying", scrobbler.username, song.track, song.artist);
 
-  // scrobbler.NowPlaying(song, function(response) {
-  //     LAST_LAST_FM_RESPONSE = response;
-  // });
+  scrobbler.NowPlaying(song, function(response) {
+      LAST_LAST_FM_RESPONSE = response;
+  });
 }
 
 var scrobbleSong = function(scrobbler, song) {
   log.info("scrobble", scrobbler.username, song.track, song.artist);
 
-  // scrobbler.Scrobble(song, function(response) {
-  //     LAST_LAST_FM_RESPONSE = response;
-  // });
+  scrobbler.Scrobble(song, function(response) {
+      LAST_LAST_FM_RESPONSE = response;
+  });
 }
 
 // simple http status server
