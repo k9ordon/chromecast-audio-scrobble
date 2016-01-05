@@ -20,11 +20,14 @@ var LAST_LAST_FM_RESPONSE = false;
 var LAST_PONG = false;
 
 // TIMEOUTS
-var TIMEOUT_LASTPONG_TIME = 30 * 1000;
+var TIMEOUT_LASTPONG_TIME = 10 * 1000;
 var TIMEOUT_LASTPONG = false;
 
-var TIMEOUT_DISCOVER_TIME = 60 * 1000;
+var TIMEOUT_DISCOVER_TIME = 30 * 1000;
 var TIMEOUT_DISCOVER = false;
+
+var TIMEOUT_SCROBBLE_TIME = 11 * 1000;
+var TIMEOUT_SCROBBLE = false;
 
 var createScrobbler = function(account) {
   var scrobbler = new scribble(
@@ -51,6 +54,7 @@ var discoverChromecast = function() {
 
   clearTimeout(TIMEOUT_DISCOVER);
   TIMEOUT_DISCOVER = setTimeout(function() {
+    clearTimeout(TIMEOUT_SCROBBLE);
     log.info('i hase not discoverd :(');
     discoverChromecast();
   },TIMEOUT_DISCOVER_TIME);
@@ -66,15 +70,19 @@ var discoverChromecast = function() {
     // var platform = util.inspect(player.platform, {showHidden: false, depth: 1});
     log.info('chromecastPlayer attach', STATUS);
 
+    onStatus(session);
+
     heartbeat.on('message', function(data) {
       LAST_PONG = new Date();
 
       clearTimeout(TIMEOUT_LASTPONG);
       TIMEOUT_LASTPONG = setTimeout(function() {
+        clearTimeout(TIMEOUT_SCROBBLE);
         log.info('i hase lost pong :(');
         discoverChromecast();
       },TIMEOUT_LASTPONG_TIME);
-      log.info('heartbeat', data);
+
+      // log.info('heartbeat', data);
     });
 
     player.on('status', onStatus);
@@ -84,12 +92,14 @@ discoverChromecast();
 
 // on chromecast status change
 var onStatus = function(status) {
-  // log.info('onStatus', status.playerState);
+  log.info('onStatus', status.playerState);
 
   STATUS = status.playerState;
 
   // if we play a track
-  if (status.playerState == "PLAYING" && status.media && status.media.metadata) {
+  if (status.playerState == "PLAYING"
+    && status.media
+    && status.media.metadata) {
     var song = {
       artist: status.media.metadata.artist,
       track: status.media.metadata.songName,
@@ -98,11 +108,15 @@ var onStatus = function(status) {
 
     LAST_TRACK = song.artist + ' - ' + song.track;
 
-    log.info('onStatus', status.playerState, song, util.inspect(status, {showHidden: false, depth: 3}));
+    log.info('onStatus', status.playerState, song);
 
     scrobbleSongOnAllScrobblers(song);
-  } else {
-    log.info('onStatus', status.playerState, util.inspect(status, {showHidden: false, depth: 3}));
+  }
+  else if(status.playerState == "PAUSED") {
+    clearTimeout(TIMEOUT_SCROBBLE);
+  }
+  else {
+    log.info('onStatus2', status.playerState);
   }
 }
 
@@ -111,17 +125,33 @@ var onLostPong = function() {
 }
 
 var scrobbleSongOnAllScrobblers = function(song) {
+  clearTimeout(TIMEOUT_SCROBBLE);
+
   for (var username in scrobblers) {
-    scrobbleSong(scrobblers[username], song)
+    nowplayingSong(scrobblers[username], song);
   }
+
+  TIMEOUT_SCROBBLE = setTimeout(function() {
+    for (var username in scrobblers) {
+      scrobbleSong(scrobblers[username], song)
+    }
+  },TIMEOUT_SCROBBLE_TIME);
+}
+
+var nowplayingSong = function(scrobbler, song) {
+  log.info("nowplaying", scrobbler.username, song.track, song.artist);
+
+  // scrobbler.NowPlaying(song, function(response) {
+  //     LAST_LAST_FM_RESPONSE = response;
+  // });
 }
 
 var scrobbleSong = function(scrobbler, song) {
-  log.info("scrobbleSong", scrobbler.username, song.track);
+  log.info("scrobble", scrobbler.username, song.track, song.artist);
 
-  scrobbler.Scrobble(song, function(response) {
-      LAST_LAST_FM_RESPONSE = response;
-  });
+  // scrobbler.Scrobble(song, function(response) {
+  //     LAST_LAST_FM_RESPONSE = response;
+  // });
 }
 
 // simple http status server
