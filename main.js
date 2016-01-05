@@ -4,6 +4,7 @@ var express = require('express')
 var webapp = express();
 var bunyan = require('bunyan');
 log = bunyan.createLogger({name: 'chromecast-audo-scrobble'});
+var parseString = require('xml2js').parseString;
 
 var util = require('util');
 
@@ -55,7 +56,7 @@ var discoverChromecast = function() {
   clearTimeout(TIMEOUT_DISCOVER);
   TIMEOUT_DISCOVER = setTimeout(function() {
     clearTimeout(TIMEOUT_SCROBBLE);
-    log.info('i hase not discoverd :(');
+    log.warn('i hase not discoverd :(');
     discoverChromecast();
   },TIMEOUT_DISCOVER_TIME);
 
@@ -78,7 +79,7 @@ var discoverChromecast = function() {
       clearTimeout(TIMEOUT_LASTPONG);
       TIMEOUT_LASTPONG = setTimeout(function() {
         clearTimeout(TIMEOUT_SCROBBLE);
-        log.info('i hase lost pong :(');
+        log.warn('i hase lost pong :(');
         discoverChromecast();
       },TIMEOUT_LASTPONG_TIME);
 
@@ -144,7 +145,17 @@ var nowplayingSong = function(scrobbler, song) {
   log.info("nowplaying", scrobbler.username, song.track, song.artist, song);
 
   scrobbler.NowPlaying(song, function(response) {
-      LAST_LAST_FM_RESPONSE = response;
+    LAST_LAST_FM_RESPONSE = response;
+
+    parseString(response, function (err, result) {
+      var status = result.lfm.$.status;
+
+      if(status == 'ok') {
+        log.info('lastfm NowPlaying', result.lfm.$.status, scrobbler.username, song.track);
+      } else {
+        log.error('lastfm NowPlaying', result.lfm.$.status, scrobbler.username, song.track);
+      }
+    });
   });
 }
 
@@ -153,6 +164,17 @@ var scrobbleSong = function(scrobbler, song) {
 
   scrobbler.Scrobble(song, function(response) {
       LAST_LAST_FM_RESPONSE = response;
+
+      parseString(response, function (err, result) {
+        var status = result.lfm.$.status;
+
+        if(status == 'ok') {
+          log.info('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
+        } else {
+          log.error('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
+        }
+
+      });
   });
 }
 
