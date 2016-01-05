@@ -1,6 +1,5 @@
 var chromecastPlayer = require('chromecast-player')();
 var scribble = require('scribble');
-var ping = require('ping');
 var express = require('express')
 var webapp = express();
 var bunyan = require('bunyan');
@@ -34,7 +33,8 @@ var createScrobbler = function(account) {
     config.lastfm.key,
     config.lastfm.secret,
     account.lastfm_username,
-    account.lastfm_password
+    account.lastfm_password,
+    false
   );
   return scrobbler;
 };
@@ -103,7 +103,8 @@ var onStatus = function(status) {
     var song = {
       artist: status.media.metadata.artist,
       track: status.media.metadata.songName,
-      album: status.media.metadata.albumName
+      album: status.media.metadata.albumName,
+      duration: status.media.duration
     };
 
     LAST_TRACK = song.artist + ' - ' + song.track;
@@ -133,13 +134,14 @@ var scrobbleSongOnAllScrobblers = function(song) {
 
   TIMEOUT_SCROBBLE = setTimeout(function() {
     for (var username in scrobblers) {
+      song.duration += TIMEOUT_SCROBBLE_TIME;
       scrobbleSong(scrobblers[username], song)
     }
   },TIMEOUT_SCROBBLE_TIME);
 }
 
 var nowplayingSong = function(scrobbler, song) {
-  log.info("nowplaying", scrobbler.username, song.track, song.artist);
+  log.info("nowplaying", scrobbler.username, song.track, song.artist, song);
 
   scrobbler.NowPlaying(song, function(response) {
       LAST_LAST_FM_RESPONSE = response;
