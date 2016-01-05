@@ -4,11 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js | node_modules/bunyan/bin/bunyan"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "bunyan": "^1.5.1",
+    "castv2": "^0.1.6",
+    "castv2-client": "^1.1.0",
     "chromecast-player": "^0.2.2",
     "express": "^4.13.3",
     "scribble": "https://github.com/dittodhole/scribble"
