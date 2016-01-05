@@ -20,13 +20,13 @@ var LAST_LAST_FM_RESPONSE = false;
 var LAST_PONG = false;
 
 // TIMEOUTS
-var TIMEOUT_LASTPONG_TIME = 10 * 1000;
+var TIMEOUT_LASTPONG_TIME = 30 * 1000;
 var TIMEOUT_LASTPONG = false;
 
-var TIMEOUT_DISCOVER_TIME = 30 * 1000;
+var TIMEOUT_DISCOVER_TIME = 60 * 1000;
 var TIMEOUT_DISCOVER = false;
 
-var TIMEOUT_SCROBBLE_TIME = 11 * 1000;
+var TIMEOUT_SCROBBLE_TIME = 30 * 1000;
 var TIMEOUT_SCROBBLE = false;
 
 var createScrobbler = function(account) {
