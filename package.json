@@ -15,6 +15,6 @@
     "castv2-client": "^1.1.0",
     "chromecast-player": "^0.2.2",
     "express": "^4.13.3",
-    "scribble": "https://github.com/dittodhole/scribble"
+    "scribble": "https://github.com/k9ordon/scribble"
   }
 }
