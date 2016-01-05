@@ -119,9 +119,9 @@ var scrobbleSongOnAllScrobblers = function(song) {
 var scrobbleSong = function(scrobbler, song) {
   log.info("scrobbleSong", scrobbler.username, song.track);
 
-  // scrobbler.Scrobble(song, function(response) {
-  //     LAST_LAST_FM_RESPONSE = response;
-  // });
+  scrobbler.Scrobble(song, function(response) {
+      LAST_LAST_FM_RESPONSE = response;
+  });
 }
 
 // simple http status server
