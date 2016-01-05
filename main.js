@@ -3,7 +3,9 @@ var scribble = require('scribble');
 var express = require('express')
 var webapp = express();
 var bunyan = require('bunyan');
-log = bunyan.createLogger({name: 'chromecast-audo-scrobble'});
+log = bunyan.createLogger({
+  name: 'chromecast-audo-scrobble'
+});
 var parseString = require('xml2js').parseString;
 
 var util = require('util');
@@ -58,7 +60,7 @@ var discoverChromecast = function() {
     clearTimeout(TIMEOUT_SCROBBLE);
     log.warn('i hase not discoverd :(');
     discoverChromecast();
-  },TIMEOUT_DISCOVER_TIME);
+  }, TIMEOUT_DISCOVER_TIME);
 
   chromecastPlayer.attach(function(err, player) {
     var session = player.currentSession;
@@ -81,7 +83,7 @@ var discoverChromecast = function() {
         clearTimeout(TIMEOUT_SCROBBLE);
         log.warn('i hase lost pong :(');
         discoverChromecast();
-      },TIMEOUT_LASTPONG_TIME);
+      }, TIMEOUT_LASTPONG_TIME);
 
       // log.info('heartbeat', data);
     });
@@ -98,9 +100,7 @@ var onStatus = function(status) {
   STATUS = status.playerState;
 
   // if we play a track
-  if (status.playerState == "PLAYING"
-    && status.media
-    && status.media.metadata) {
+  if (status.playerState == "PLAYING" && status.media && status.media.metadata) {
     var song = {
       artist: status.media.metadata.artist,
       track: status.media.metadata.songName,
@@ -113,11 +113,9 @@ var onStatus = function(status) {
     log.info('onStatus', status.playerState, song);
 
     scrobbleSongOnAllScrobblers(song);
-  }
-  else if(status.playerState == "PAUSED") {
+  } else if (status.playerState == "PAUSED") {
     clearTimeout(TIMEOUT_SCROBBLE);
-  }
-  else {
+  } else {
     log.info('onStatus2', status.playerState);
   }
 }
@@ -138,7 +136,7 @@ var scrobbleSongOnAllScrobblers = function(song) {
       song.duration += TIMEOUT_SCROBBLE_TIME;
       scrobbleSong(scrobblers[username], song)
     }
-  },TIMEOUT_SCROBBLE_TIME);
+  }, TIMEOUT_SCROBBLE_TIME);
 }
 
 var nowplayingSong = function(scrobbler, song) {
@@ -147,10 +145,10 @@ var nowplayingSong = function(scrobbler, song) {
   scrobbler.NowPlaying(song, function(response) {
     LAST_LAST_FM_RESPONSE = response;
 
-    parseString(response, function (err, result) {
+    parseString(response, function(err, result) {
       var status = result.lfm.$.status;
 
-      if(status == 'ok') {
+      if (status == 'ok') {
         log.info('lastfm NowPlaying', result.lfm.$.status, scrobbler.username, song.track);
       } else {
         log.error('lastfm NowPlaying', result.lfm.$.status, scrobbler.username, song.track);
@@ -163,18 +161,18 @@ var scrobbleSong = function(scrobbler, song) {
   log.info("scrobble", scrobbler.username, song.track, song.artist);
 
   scrobbler.Scrobble(song, function(response) {
-      LAST_LAST_FM_RESPONSE = response;
+    LAST_LAST_FM_RESPONSE = response;
 
-      parseString(response, function (err, result) {
-        var status = result.lfm.$.status;
+    parseString(response, function(err, result) {
+      var status = result.lfm.$.status;
 
-        if(status == 'ok') {
-          log.info('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
-        } else {
-          log.error('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
-        }
+      if (status == 'ok') {
+        log.info('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
+      } else {
+        log.error('lastfm Scrobble', result.lfm.$.status, scrobbler.username, song.track);
+      }
 
-      });
+    });
   });
 }
 
