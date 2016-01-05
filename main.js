@@ -6,6 +6,8 @@ var bunyan = require('bunyan');
 log = bunyan.createLogger({
   name: 'chromecast-audo-scrobble'
 });
+log.level(10)
+
 var parseString = require('xml2js').parseString;
 
 var util = require('util');
@@ -47,7 +49,7 @@ var createScrobbler = function(account) {
 accounts.forEach(function(account) {
   if (account.active != true) return false;
 
-  log.info('Added Lastfm account', account.lastfm_username);
+  log.debug('Added Lastfm account', account.lastfm_username);
   scrobblers[account.lastfm_username] = createScrobbler(account);
 });
 
@@ -58,7 +60,7 @@ var discoverChromecast = function() {
   clearTimeout(TIMEOUT_DISCOVER);
   TIMEOUT_DISCOVER = setTimeout(function() {
     clearTimeout(TIMEOUT_SCROBBLE);
-    log.warn('i hase not discoverd :(');
+    log.debug('i hase not discoverd :(');
     discoverChromecast();
   }, TIMEOUT_DISCOVER_TIME);
 
@@ -81,7 +83,7 @@ var discoverChromecast = function() {
       clearTimeout(TIMEOUT_LASTPONG);
       TIMEOUT_LASTPONG = setTimeout(function() {
         clearTimeout(TIMEOUT_SCROBBLE);
-        log.warn('i hase lost pong :(');
+        log.info('i hase lost pong :(');
         discoverChromecast();
       }, TIMEOUT_LASTPONG_TIME);
 
@@ -95,7 +97,7 @@ discoverChromecast();
 
 // on chromecast status change
 var onStatus = function(status) {
-  log.info('onStatus', status.playerState);
+  log.debug('onStatus', status.playerState);
 
   STATUS = status.playerState;
 
@@ -110,13 +112,14 @@ var onStatus = function(status) {
 
     LAST_TRACK = song.artist + ' - ' + song.track;
 
-    log.info('onStatus', status.playerState, song);
+    // log.info('onStatus', status.playerState);
+    log.debug('song', song);
 
     scrobbleSongOnAllScrobblers(song);
   } else if (status.playerState == "PAUSED") {
     clearTimeout(TIMEOUT_SCROBBLE);
   } else {
-    log.info('onStatus2', status.playerState);
+    // log.info('onStatus', status.playerState);
   }
 }
 
@@ -140,7 +143,7 @@ var scrobbleSongOnAllScrobblers = function(song) {
 }
 
 var nowplayingSong = function(scrobbler, song) {
-  log.info("nowplaying", scrobbler.username, song.track, song.artist, song);
+  log.debug("nowplaying", scrobbler.username, song.track, song.artist, song);
 
   scrobbler.NowPlaying(song, function(response) {
     LAST_LAST_FM_RESPONSE = response;
@@ -158,7 +161,7 @@ var nowplayingSong = function(scrobbler, song) {
 }
 
 var scrobbleSong = function(scrobbler, song) {
-  log.info("scrobble", scrobbler.username, song.track, song.artist);
+  log.debug("scrobble", scrobbler.username, song.track, song.artist);
 
   scrobbler.Scrobble(song, function(response) {
     LAST_LAST_FM_RESPONSE = response;
