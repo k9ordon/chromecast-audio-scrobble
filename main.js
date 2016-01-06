@@ -113,12 +113,15 @@ var onStatus = function(status) {
     LAST_TRACK = song.artist + ' - ' + song.track;
 
     // log.info('onStatus', status.playerState);
-    log.debug('song', song);
+    log.debug('onStatus song', song);
 
     scrobbleSongOnAllScrobblers(song);
   } else if (status.playerState == "PAUSED") {
+    log.debug('onStatus paused');
+
     clearTimeout(TIMEOUT_SCROBBLE);
   } else {
+    log.debug('onStatus else');
     // log.info('onStatus', status.playerState);
   }
 }
@@ -181,7 +184,7 @@ var scrobbleSong = function(scrobbler, song) {
 
 // simple http status server
 webapp.get('/', function(req, res) {
-  res.send("<meta http-equiv='refresh' content='10'><meta name='viewport' content='user-scalable=no, width=device-width, minimum-scale=1.0, maximum-scale=1.0' /><body><pre>" + STATUS + '\n\nLAST_TRACK\n' + LAST_TRACK + '\n\nLAST_PONG\n' + LAST_PONG + '\n\nONLINE_ACCOUNTS\n' + Object.keys(scrobblers).toString() + '\n\nLAST_FM_RESPONSE\n' + LAST_LAST_FM_RESPONSE);
+  res.send("<meta http-equiv='refresh' content='15'><meta name='viewport' content='user-scalable=no, width=device-width, minimum-scale=1.0, maximum-scale=1.0' /><body><pre>" + STATUS + '\n\nLAST_TRACK\n' + LAST_TRACK + '\n\nLAST_PONG\n' + LAST_PONG + '\n\nONLINE_ACCOUNTS\n' + Object.keys(scrobblers).toString() + '\n\nLAST_FM_RESPONSE\n' + LAST_LAST_FM_RESPONSE);
 });
 
 webapp.get('/add/:username', function(req, res) {
@@ -207,6 +210,24 @@ webapp.get('/remove/:username', function(req, res) {
   log.info('Removed Lastfm account', username);
   // res.send('removed ' + account.lastfm_username);
   res.redirect('/');
+});
+
+var getAccountFromUsername = function(username) {
+  var user = false;
+  accounts.forEach(function(account) {
+    if (account.lastfm_username === username) user = account;
+  });
+  return user;
+}
+
+webapp.get('/status/:username', function(req, res) {
+  var username = req.params.username;
+  if (!username) return res.send('no username');
+
+  var status = scrobblers.hasOwnProperty(username) ? 1 : 0;
+
+  log.info('Status for', username, status);
+  res.send(status + '');
 });
 
 var getAccountFromUsername = function(username) {
